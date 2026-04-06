@@ -10,3 +10,4 @@ numpy
 requests
 python-dotenv
 reportlab
+gunicorn
