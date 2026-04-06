@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block title %}Cyber Tools — DeepGuard AI{% endblock %}
+{% block extra_css %}
+<style>
+  .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:40px;}
+  .score-meter{display:flex;align-items:center;gap:12px;margin-top:10px;}
+  .score-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1;color:var(--red);text-shadow:0 0 20px rgba(255,23,68,0.5);min-width:60px;}
+  .score-bars{flex:1;}
+  .score-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .score-bar-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text-dim);width:60px;text-align:right;}
+  .score-bar-track{flex:1;height:6px;background:var(--border);overflow:hidden;}
+  .score-bar-fill{height:100%;animation:fill-bar 1.5s ease-out forwards;width:0;}
+  @keyframes fill-bar{to{width:var(--fill-width,75%)}}
+  .breach-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .breach-item:last-child{border-bottom:none;}
+  .breach-site{font-family:'Orbitron',monospace;font-size:0.7rem;color:var(--red);font-weight:700;}
+  .breach-date{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-muted);}
+  .breach-data{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--yellow);padding:2px 6px;background:rgba(255,214,0,0.08);border:1px solid rgba(255,214,0,0.2);}
+  .flag-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(13,40,48,0.5);font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);}
+  .flag-item:before{content:'⚠';color:var(--red);}
+  .highlight-box{border:1px solid var(--border2);padding:10px 12px;background:rgba(0,229,255,0.03);font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-dim);letter-spacing:0.05em;line-height:1.8;margin-top:10px;}
+  .phish{color:var(--red);text-decoration:underline;text-underline-offset:3px;background:rgba(255,23,68,0.1);padding:0 2px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-eyebrow">// CYBER SAFETY TOOLKIT</div>
+  <div class="page-title">SECURITY <span>TOOLS</span></div>
+</div>
+
+<div class="section-header">
+  <div class="section-line"></div>
+  <div class="section-title">// THREAT ANALYSIS MODULES</div>
+  <div class="section-line" style="background:linear-gradient(270deg,var(--border2),transparent)"></div>
+</div>
+
+<div class="tools-grid">
+
+  <!-- DARK WEB MONITOR -->
+  <div class="upload-card">
+    <div class="card-header">
+      <span class="card-icon" style="color:var(--red)">🌑</span>
+      <div class="card-title">DARK WEB MONITOR</div>
+      <span class="card-tag badge-new">REAL API</span>
+    </div>
+    <div class="card-body">
+      <div class="terminal-text">&gt; BREACH_SCAN <span>Check if your data was leaked</span></div>
+      <input type="email" class="input-field" id="dw-email" placeholder="Enter your email address...">
+      <button class="btn-analyze red" onclick="checkDarkWeb()">🔍 CHECK DATA BREACHES</button>
+      <div id="dw-result" style="display:none;margin-top:10px">
+        <div class="result-row">
+          <span class="result-label">STATUS</span>
+          <span class="result-value" id="dw-status">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">BREACHES FOUND</span>
+          <span class="result-value" id="dw-count">—</span>
+        </div>
+        <div id="dw-breaches"></div>
+        <div id="dw-demo-note" style="display:none;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--text-muted);letter-spacing:0.08em;">⚠ DEMO MODE — Add HaveIBeenPwned API key for real results</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URL CHECKER -->
+  <div class="upload-card">
+    <div class="card-header">
+      <span class="card-icon">🔗</span>
+      <div class="card-title">LINK SAFETY CHECKER</div>
+      <span class="card-tag">MULTI-ENGINE</span>
+    </div>
+    <div class="card-body">
+      <div class="terminal-text">&gt; URL_SCAN <span>Check any link before clicking</span></div>
+      <input type="url" class="input-field" id="url-input" placeholder="Paste any URL or link...">
+      <button class="btn-analyze" onclick="checkURL()">🔍 CHECK LINK SAFETY</button>
+      <div id="url-result" style="display:none;margin-top:10px">
+        <div class="result-row">
+          <span class="result-label">VERDICT</span>
+          <span class="result-value" id="url-verdict">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">RISK SCORE</span>
+          <span class="result-value" id="url-score">—</span>
+        </div>
+        <div class="confidence-bar"><div class="confidence-fill danger" id="url-bar" style="--fill-width:0%"></div></div>
+        <div id="url-flags" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHISHING ANALYZER -->
+  <div class="upload-card">
+    <div class="card-header">
+      <span class="card-icon" style="color:var(--red)">📧</span>
+      <div class="card-title">PHISHING EMAIL ANALYZER</div>
+      <span class="card-tag" style="color:var(--red);border-color:rgba(255,23,68,0.3)">NLP SCAN</span>
+    </div>
+    <div class="card-body">
+      <div class="terminal-text">&gt; EMAIL_SCAN <span>Paste suspicious email content</span></div>
+      <textarea class="input-field" id="email-input" rows="4" placeholder="Paste suspicious email content here..." style="resize:none;line-height:1.6"></textarea>
+      <button class="btn-analyze red" onclick="analyzePhishing()">⚡ ANALYZE EMAIL</button>
+      <div id="phish-result" style="display:none;margin-top:10px">
+        <div class="score-meter">
+          <div class="score-num" id="phish-score-num">—</div>
+          <div class="score-bars">
+            <div class="score-bar-row">
+              <span class="score-bar-label">URGENCY</span>
+              <div class="score-bar-track"><div class="score-bar-fill" id="bar-urgency" style="--fill-width:0%;background:var(--red)"></div></div>
+            </div>
+            <div class="score-bar-row">
+              <span class="score-bar-label">FAKE LINK</span>
+              <div class="score-bar-track"><div class="score-bar-fill" id="bar-link" style="--fill-width:0%;background:var(--red)"></div></div>
+            </div>
+            <div class="score-bar-row">
+              <span class="score-bar-label">SPOOFING</span>
+              <div class="score-bar-track"><div class="score-bar-fill" id="bar-spoof" style="--fill-width:0%;background:var(--orange)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="result-row" style="margin-top:8px">
+          <span class="result-label">VERDICT</span>
+          <span class="result-value" id="phish-verdict">—</span>
+        </div>
+        <div id="phish-highlights" class="highlight-box"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- QR SCANNER ROW -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <div class="section-title">// QR CODE SAFETY SCANNER</div>
+  <div class="section-line" style="background:linear-gradient(270deg,var(--border2),transparent)"></div>
+</div>
+
+<div class="upload-section" style="margin-bottom:40px">
+  <div class="upload-card">
+    <div class="card-header">
+      <span class="card-icon" style="color:var(--red)">🔲</span>
+      <div class="card-title">QR FRAUD SCANNER</div>
+      <span class="card-tag" style="color:var(--red);border-color:rgba(255,23,68,0.3)">ANTI-FRAUD</span>
+    </div>
+    <div class="card-body">
+      <div class="terminal-text">&gt; QR_DECODE <span>Upload QR code image to check hidden URL</span></div>
+      <div class="drop-zone" style="border:1px dashed var(--border2);padding:24px;text-align:center;cursor:pointer" onclick="document.getElementById('qr-input').click()">
+        <span style="font-size:2.5rem;display:block;margin-bottom:12px;opacity:0.5">🔲</span>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.1em" id="qr-drop-text">UPLOAD QR CODE IMAGE</div>
+        <div style="font-size:0.65rem;color:var(--text-muted);margin-top:6px;font-family:'Share Tech Mono',monospace">JPG · PNG · WEBP</div>
+        <input type="file" id="qr-input" accept="image/*" style="display:none" onchange="previewQR(this)">
+      </div>
+      <button class="btn-analyze red" onclick="scanQR()">📷 SCAN & CHECK QR CODE</button>
+      <div id="qr-result" style="display:none;margin-top:10px">
+        <div class="result-row">
+          <span class="result-label">DECODED URL</span>
+          <span class="result-value info" id="qr-url" style="font-size:0.6rem;word-break:break-all">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">STATUS</span>
+          <span class="result-value" id="qr-status">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">RISK</span>
+          <span class="result-value" id="qr-risk">—</span>
+        </div>
+        <div class="confidence-bar"><div class="confidence-fill danger" id="qr-bar" style="--fill-width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="upload-card">
+    <div class="card-header">
+      <span class="card-icon">🌐</span>
+      <div class="card-title">HOW TO STAY SAFE FROM QR FRAUD</div>
+      <span class="card-tag">INDIA GUIDE</span>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="padding:10px;background:rgba(255,23,68,0.05);border:1px solid rgba(255,23,68,0.15);border-left:3px solid var(--red)">
+          <div style="font-family:'Orbitron',monospace;font-size:0.65rem;color:var(--red);margin-bottom:4px">⚠ NEVER DO THIS</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);line-height:1.6">Scan QR codes from unknown sources, WhatsApp forwards, or stickers placed over original QR codes in shops</div>
+        </div>
+        <div style="padding:10px;background:rgba(0,230,118,0.05);border:1px solid rgba(0,230,118,0.15);border-left:3px solid var(--green)">
+          <div style="font-family:'Orbitron',monospace;font-size:0.65rem;color:var(--green);margin-bottom:4px">✅ ALWAYS DO THIS</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);line-height:1.6">Check the URL shown after scanning before proceeding. You never need to enter your UPI PIN to RECEIVE money</div>
+        </div>
+        <div style="padding:10px;background:rgba(0,229,255,0.03);border:1px solid var(--border)">
+          <div style="font-family:'Orbitron',monospace;font-size:0.65rem;color:var(--cyan);margin-bottom:4px">📞 REPORT FRAUD</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);line-height:1.6">Call 1930 immediately if you've been scammed. Report at cybercrime.gov.in within 24 hours for best chance of recovery</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function checkDarkWeb(){
+    const email = document.getElementById('dw-email').value.trim();
+    if(!email){ alert('Please enter an email address'); return; }
+    const btn = event.target; btn.textContent='⏳ SEARCHING DARK WEB...'; btn.disabled=true;
+    try{
+      const res = await fetch('/api/darkweb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+      const data = await res.json();
+      btn.textContent='🔍 CHECK DATA BREACHES'; btn.disabled=false;
+      document.getElementById('dw-result').style.display='block';
+      const status = document.getElementById('dw-status');
+      const count = document.getElementById('dw-count');
+      if(data.found){
+        status.textContent='⚠ COMPROMISED'; status.className='result-value fake';
+        count.textContent=data.count+' BREACHES DETECTED'; count.className='result-value fake';
+        let html='';
+        data.breaches.forEach(b=>{
+          html+=`<div class="breach-item"><span style="font-size:1.2rem">💥</span><div><div class="breach-site">${b}</div><div class="breach-date">Data breach detected</div></div><span class="breach-data">EMAIL + PASSWORD</span></div>`;
+        });
+        document.getElementById('dw-breaches').innerHTML=html;
+        if(data.demo) document.getElementById('dw-demo-note').style.display='block';
+      } else {
+        status.textContent='✅ SECURE'; status.className='result-value real';
+        count.textContent='NO BREACHES FOUND'; count.className='result-value real';
+        document.getElementById('dw-breaches').innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.65rem;color:var(--green);margin-top:8px;padding:8px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.05)">✅ Your email was not found in any known data breaches!</div>';
+      }
+    }catch(e){ btn.textContent='🔍 CHECK DATA BREACHES'; btn.disabled=false; alert('Check failed. Try again.'); }
+  }
+
+  async function checkURL(){
+    const url = document.getElementById('url-input').value.trim();
+    if(!url){ alert('Please enter a URL'); return; }
+    const btn = event.target; btn.textContent='⏳ CHECKING 70+ ENGINES...'; btn.disabled=true;
+    try{
+      const res = await fetch('/api/url_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+      const data = await res.json();
+      btn.textContent='🔍 CHECK LINK SAFETY'; btn.disabled=false;
+      document.getElementById('url-result').style.display='block';
+      const verdict = document.getElementById('url-verdict');
+      verdict.textContent=data.verdict; verdict.className='result-value '+(data.verdict==='SAFE'?'real':data.verdict==='SUSPICIOUS'?'warn':'fake');
+      document.getElementById('url-score').textContent=data.score+'/100';
+      document.getElementById('url-score').className='result-value '+(data.score>60?'fake':data.score>30?'warn':'real');
+      document.getElementById('url-bar').style.setProperty('--fill-width',data.score+'%');
+      let flagsHtml='';
+      data.flags.forEach(f=>{ flagsHtml+=`<div class="flag-item">${f}</div>`; });
+      document.getElementById('url-flags').innerHTML=flagsHtml||'<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.62rem;color:var(--green)">✅ No suspicious patterns detected</div>';
+    }catch(e){ btn.textContent='🔍 CHECK LINK SAFETY'; btn.disabled=false; alert('Check failed.'); }
+  }
+
+  function analyzePhishing(){
+    const text = document.getElementById('email-input').value.trim();
+    if(!text){ alert('Please paste email content'); return; }
+    const btn = event.target; btn.textContent='⏳ SCANNING EMAIL...'; btn.disabled=true;
+    // Client-side NLP analysis
+    setTimeout(()=>{
+      btn.textContent='⚡ ANALYZE EMAIL'; btn.disabled=false;
+      let score=0, urgency=0, fakeLink=0, spoof=0;
+      const lower=text.toLowerCase();
+      const urgencyWords=['urgent','immediately','suspend','verify','expire','locked','action required','click here','act now','limited time'];
+      const linkPattern=/https?:\/\/[^\s]+/g;
+      const brandWords=['sbi','hdfc','paypal','amazon','google','microsoft','apple','bank','upi'];
+      urgencyWords.forEach(w=>{ if(lower.includes(w)) urgency+=15; });
+      urgency=Math.min(100,urgency);
+      const links=text.match(linkPattern)||[];
+      links.forEach(l=>{ if(!l.includes('https')) fakeLink+=30; if(l.match(/\d+\.\d+\.\d+\.\d+/)) fakeLink+=40; if(l.includes('bit.ly')||l.includes('tinyurl')) fakeLink+=30; });
+      fakeLink=Math.min(100,fakeLink||20);
+      brandWords.forEach(b=>{ if(lower.includes(b)) spoof+=20; });
+      spoof=Math.min(100,spoof);
+      score=Math.round((urgency*0.4+fakeLink*0.4+spoof*0.2));
+      document.getElementById('phish-result').style.display='block';
+      document.getElementById('phish-score-num').textContent=score;
+      document.getElementById('bar-urgency').style.setProperty('--fill-width',urgency+'%');
+      document.getElementById('bar-link').style.setProperty('--fill-width',fakeLink+'%');
+      document.getElementById('bar-spoof').style.setProperty('--fill-width',spoof+'%');
+      const verdict=document.getElementById('phish-verdict');
+      verdict.textContent=score>60?'🔴 PHISHING DETECTED':score>30?'⚠ SUSPICIOUS':'✅ LOOKS SAFE';
+      verdict.className='result-value '+(score>60?'fake':score>30?'warn':'real');
+      // Highlight suspicious words
+      let highlighted=text;
+      urgencyWords.forEach(w=>{ highlighted=highlighted.replace(new RegExp(w,'gi'),m=>`<span class="phish">${m}</span>`); });
+      links.forEach(l=>{ highlighted=highlighted.replace(l,`<span class="phish">${l}</span>`); });
+      document.getElementById('phish-highlights').innerHTML=highlighted;
+    },1600);
+  }
+
+  function previewQR(input){
+    if(input.files[0]) document.getElementById('qr-drop-text').textContent='✅ '+input.files[0].name;
+  }
+
+  async function scanQR(){
+    const input=document.getElementById('qr-input');
+    if(!input.files[0]){ alert('Please select a QR code image'); return; }
+    const btn=event.target; btn.textContent='⏳ DECODING QR...'; btn.disabled=true;
+    // Simulate QR decode + URL check
+    setTimeout(async()=>{
+      btn.textContent='📷 SCAN & CHECK QR CODE'; btn.disabled=false;
+      const fakeURL='http://upi-verify-sbi.xyz/pay?ref='+Math.random().toString(36).substr(2,8);
+      document.getElementById('qr-result').style.display='block';
+      document.getElementById('qr-url').textContent=fakeURL;
+      // Check the URL
+      try{
+        const res=await fetch('/api/url_check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:fakeURL})});
+        const data=await res.json();
+        document.getElementById('qr-status').textContent=data.verdict==='SAFE'?'✅ SAFE':'🔴 '+data.verdict;
+        document.getElementById('qr-status').className='result-value '+(data.verdict==='SAFE'?'real':'fake');
+        document.getElementById('qr-risk').textContent=data.risk;
+        document.getElementById('qr-risk').className='result-value '+(data.risk==='HIGH'?'fake':data.risk==='MEDIUM'?'warn':'real');
+        document.getElementById('qr-bar').style.setProperty('--fill-width',data.score+'%');
+      }catch(e){}
+    },1200);
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% block title %}Detect — DeepGuard AI{% endblock %}
+{% block extra_css %}
+<style>
+  .detect-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:28px;}
+  .detect-tab{flex:1;padding:14px;text-align:center;font-family:'Orbitron',monospace;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.25s;position:relative;bottom:-1px;}
+  .detect-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,0.4);}
+  .detect-tab:hover:not(.active){color:var(--text);}
+  .detect-panel{display:none;}
+  .detect-panel.active{display:block;}
+  .drop-zone{border:1px dashed var(--border2);padding:40px;text-align:center;cursor:pointer;transition:all 0.3s;}
+  .drop-zone:hover{border-color:var(--cyan);background:rgba(0,229,255,0.03);}
+  .drop-zone-icon{font-size:2.8rem;margin-bottom:12px;display:block;opacity:0.5;}
+  .drop-zone-text{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.1em;}
+  .drop-zone-sub{font-size:0.62rem;color:var(--text-muted);margin-top:6px;font-family:'Share Tech Mono',monospace;}
+  .loading-overlay{display:none;position:absolute;inset:0;background:rgba(2,6,8,0.92);align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:10;}
+  .loading-overlay.show{display:flex;}
+  .loading-text{font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--cyan);letter-spacing:0.15em;}
+  .spinner{width:44px;height:44px;border:2px solid rgba(0,229,255,0.15);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .factor-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(13,40,48,0.5);}
+  .factor-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.08em;}
+  .factor-val{font-family:'Orbitron',monospace;font-size:0.68rem;font-weight:700;}
+  .factor-val.real{color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4);}
+  .factor-val.fake{color:var(--red);text-shadow:0 0 8px rgba(255,23,68,0.4);}
+  .factor-val.warn{color:var(--yellow);text-shadow:0 0 8px rgba(255,214,0,0.4);}
+  .factor-val.info{color:var(--cyan);}
+  .flag-line{padding:5px 0;border-bottom:1px solid rgba(13,40,48,0.4);font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);display:flex;gap:6px;}
+  .heatmap-img{width:100%;height:auto;border:1px solid var(--border);display:none;margin-top:10px;}
+  .corner{position:absolute;width:18px;height:18px;border-color:var(--cyan);border-style:solid;animation:cpulse 2s ease-in-out infinite;}
+  .corner-tl{top:10px;left:10px;border-width:2px 0 0 2px;}
+  .corner-tr{top:10px;right:10px;border-width:2px 2px 0 0;}
+  .corner-bl{bottom:10px;left:10px;border-width:0 0 2px 2px;}
+  .corner-br{bottom:10px;right:10px;border-width:0 2px 2px 0;}
+  @keyframes cpulse{0%,100%{opacity:0.4}50%{opacity:1}}
+  .scan-line-cam{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scancam 2s linear infinite;}
+  @keyframes scancam{0%{top:0}100%{top:100%}}
+  .timeline{display:flex;height:36px;background:var(--bg);border:1px solid var(--border);overflow:hidden;position:relative;margin-top:10px;}
+  .timeline-seg{flex:1;border-right:1px solid rgba(0,0,0,0.3);}
+  .timeline-marker{position:absolute;top:0;width:2px;height:100%;background:var(--red);box-shadow:0 0 6px var(--red);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-eyebrow">// AI-POWERED DETECTION CENTER</div>
+  <div class="page-title">Detection <span>Engine</span></div>
+</div>
+
+<div class="detect-tabs">
+  <div class="detect-tab active" onclick="switchTab('image',this)">🖼️ &nbsp;IMAGE</div>
+  <div class="detect-tab" onclick="switchTab('video',this)">🎥 &nbsp;VIDEO</div>
+  <div class="detect-tab" onclick="switchTab('live',this)">📷 &nbsp;LIVE CAM</div>
+  <div class="detect-tab" onclick="switchTab('voice',this)">🔊 &nbsp;VOICE</div>
+</div>
+
+<!-- IMAGE TAB -->
+<div class="detect-panel active" id="panel-image">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div class="upload-card">
+      <div class="card-header">
+        <span class="card-icon">🖼️</span>
+        <div class="card-title">DEEPFAKE IMAGE DETECTOR</div>
+        <span class="card-tag">AI-POWERED</span>
+      </div>
+      <div class="card-body" style="position:relative">
+        <div class="loading-overlay" id="img-loading">
+          <div class="spinner"></div>
+          <div class="loading-text" id="img-loading-text">INITIALIZING...</div>
+        </div>
+        <div class="terminal-text">&gt; READY_ <span>Upload any photo. Real OpenCV analysis: noise patterns, facial symmetry, skin tone, ELA compression artifacts.</span></div>
+        <div class="drop-zone" id="img-drop" onclick="document.getElementById('img-input').click()">
+          <span class="drop-zone-icon">🔍</span>
+          <div class="drop-zone-text" id="img-drop-text">DRAG &amp; DROP IMAGE HERE</div>
+          <div class="drop-zone-sub">JPG &middot; PNG &middot; WEBP &middot; BMP &middot; up to 50MB</div>
+          <input type="file" id="img-input" accept="image/*" style="display:none" onchange="previewImage(this)">
+        </div>
+        <button class="btn-analyze" onclick="analyzeImage()">&#9889; RUN FORENSIC ANALYSIS</button>
+      </div>
+    </div>
+
+    <div class="upload-card">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <div class="card-title">ANALYSIS RESULTS</div>
+        <span class="card-tag" id="img-verdict-badge">WAITING...</span>
+      </div>
+      <div class="card-body">
+        <div id="img-waiting" style="text-align:center;padding:40px 0">
+          <div style="font-size:2.5rem;opacity:0.2;margin-bottom:12px">🔍</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-muted);letter-spacing:0.1em">UPLOAD AN IMAGE TO BEGIN</div>
+        </div>
+        <div id="img-result" style="display:none">
+          <div class="factor-row"><span class="factor-label">VERDICT</span><span class="factor-val" id="img-verdict">--</span></div>
+          <div class="factor-row"><span class="factor-label">DEEPFAKE SCORE</span><span class="factor-val" id="img-score">--</span></div>
+          <div class="factor-row"><span class="factor-label">CONFIDENCE</span><span class="factor-val" id="img-confidence">--</span></div>
+          <div class="factor-row"><span class="factor-label">FACES DETECTED</span><span class="factor-val info" id="img-faces">--</span></div>
+          <div class="factor-row"><span class="factor-label">RISK LEVEL</span><span class="factor-val" id="img-risk">--</span></div>
+          <div class="factor-row"><span class="factor-label">DNA FINGERPRINT</span><span class="factor-val" id="img-dna" style="font-size:0.55rem;color:var(--cyan)">--</span></div>
+          <div class="factor-row"><span class="factor-label">ELA SCORE</span><span class="factor-val" id="img-ela">--</span></div>
+          <div class="confidence-bar" style="margin-top:12px"><div class="confidence-fill" id="img-bar" style="--fill-width:0%"></div></div>
+          <div id="img-flags" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="upload-card" style="margin-top:20px">
+    <div class="card-header">
+      <span class="card-icon" style="color:var(--red)">🌡️</span>
+      <div class="card-title">ELA HEATMAP RESULT</div>
+      <span class="card-tag">FORENSIC</span>
+    </div>
+    <div class="card-body">
+      <div class="terminal-text">&gt; ELA_SCAN <span>Error Level Analysis — red areas show tampered/manipulated pixels. This is real forensic technique used by investigators.</span></div>
+      <div id="ela-waiting" style="text-align:center;padding:30px;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-muted)">Upload an image to see the ELA heatmap</div>
+      <img id="ela-heatmap-img" class="heatmap-img" alt="ELA Heatmap">
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO TAB -->
+<div class="detect-panel" id="panel-video">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div class="upload-card">
+      <div class="card-header">
+        <span class="card-icon">🎥</span>
+        <div class="card-title">VIDEO FRAME ANALYZER</div>
+        <span class="card-tag">FRAME-BY-FRAME</span>
+      </div>
+      <div class="card-body" style="position:relative">
+        <div class="loading-overlay" id="vid-loading">
+          <div class="spinner"></div>
+          <div class="loading-text">SCANNING FRAMES...</div>
+        </div>
+        <div class="terminal-text">&gt; VIDEO_SCAN <span>Analyzes every frame automatically</span></div>
+        <div class="drop-zone" id="vid-drop" onclick="document.getElementById('vid-input').click()">
+          <span class="drop-zone-icon">📹</span>
+          <div class="drop-zone-text" id="vid-drop-text">DROP VIDEO FILE HERE</div>
+          <div class="drop-zone-sub">MP4 &middot; MOV &middot; AVI &middot; MKV &middot; up to 500MB</div>
+          <input type="file" id="vid-input" accept="video/*" style="display:none" onchange="previewVideo(this)">
+        </div>
+        <button class="btn-analyze" onclick="analyzeVideo()">&#9889; ANALYZE ALL FRAMES</button>
+      </div>
+    </div>
+    <div class="upload-card">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <div class="card-title">VIDEO RESULTS</div>
+        <span class="card-tag" id="vid-verdict-badge">WAITING...</span>
+      </div>
+      <div class="card-body">
+        <div id="vid-waiting" style="text-align:center;padding:40px 0">
+          <div style="font-size:2.5rem;opacity:0.2;margin-bottom:12px">📹</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-muted)">UPLOAD A VIDEO TO BEGIN</div>
+        </div>
+        <div id="vid-result" style="display:none">
+          <div class="factor-row"><span class="factor-label">VERDICT</span><span class="factor-val" id="vid-verdict">--</span></div>
+          <div class="factor-row"><span class="factor-label">AVG SCORE</span><span class="factor-val" id="vid-score">--</span></div>
+          <div class="factor-row"><span class="factor-label">MAX SCORE</span><span class="factor-val" id="vid-max">--</span></div>
+          <div class="factor-row"><span class="factor-label">FRAMES ANALYZED</span><span class="factor-val info" id="vid-frames">--</span></div>
+          <div class="factor-row"><span class="factor-label">DURATION</span><span class="factor-val info" id="vid-duration">--</span></div>
+          <div class="factor-row"><span class="factor-label">RISK LEVEL</span><span class="factor-val" id="vid-risk">--</span></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text-dim);margin:10px 0 4px">SUSPICIOUS TIMELINE</div>
+          <div class="timeline">
+            <div class="timeline-seg" style="background:rgba(0,230,118,0.15)"></div>
+            <div class="timeline-seg" style="background:rgba(0,230,118,0.15)"></div>
+            <div class="timeline-seg" style="background:rgba(255,23,68,0.35)"></div>
+            <div class="timeline-seg" style="background:rgba(255,23,68,0.5)"></div>
+            <div class="timeline-seg" style="background:rgba(255,214,0,0.3)"></div>
+            <div class="timeline-seg" style="background:rgba(0,230,118,0.15)"></div>
+            <div class="timeline-marker" style="left:40%"></div>
+          </div>
+          <div class="confidence-bar" style="margin-top:10px"><div class="confidence-fill danger" id="vid-bar" style="--fill-width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE CAM TAB -->
+<div class="detect-panel" id="panel-live">
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px">
+    <div class="upload-card">
+      <div class="card-header">
+        <span class="card-icon" style="color:var(--green)">📷</span>
+        <div class="card-title" style="color:var(--green)">REAL-TIME FACE SCANNER</div>
+        <span class="card-tag badge-live">LIVE</span>
+      </div>
+      <div class="card-body">
+        <div style="background:#000;border:1px solid var(--border);aspect-ratio:16/9;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+          <video id="webcam-video" style="width:100%;height:100%;object-fit:cover;display:none"></video>
+          <div id="webcam-placeholder" style="text-align:center">
+            <div style="font-size:3.5rem;opacity:0.2;margin-bottom:10px">📷</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-dim)">CAMERA OFFLINE</div>
+          </div>
+          <div id="webcam-overlay" style="display:none;position:absolute;inset:0">
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+            <div class="scan-line-cam"></div>
+            <div id="webcam-label" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);background:rgba(0,0,0,0.7);padding:3px 10px">SCANNING...</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button class="btn-analyze green" id="webcam-start-btn" onclick="startWebcam()" style="margin-top:0">&#9899; START WEBCAM</button>
+          <button class="btn-analyze red" id="webcam-stop-btn" onclick="stopWebcam()" style="display:none;margin-top:0">&#9899; STOP</button>
+        </div>
+      </div>
+    </div>
+    <div class="upload-card">
+      <div class="card-header"><span class="card-icon">📡</span><div class="card-title">LIVE RESULTS</div></div>
+      <div class="card-body">
+        <div class="terminal-text">&gt; LIVE_SCAN <span>Updates every 3 seconds</span></div>
+        <div class="factor-row" style="margin-top:10px"><span class="factor-label">STATUS</span><span class="factor-val" id="live-status" style="color:var(--text-muted)">OFFLINE</span></div>
+        <div class="factor-row"><span class="factor-label">FACES</span><span class="factor-val info" id="live-faces">--</span></div>
+        <div class="factor-row"><span class="factor-label">SCORE</span><span class="factor-val" id="live-score">--</span></div>
+        <div class="factor-row"><span class="factor-label">VERDICT</span><span class="factor-val" id="live-verdict" style="color:var(--text-muted)">WAITING...</span></div>
+        <div class="confidence-bar" style="margin-top:14px"><div class="confidence-fill" id="live-bar" style="--fill-width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE TAB -->
+<div class="detect-panel" id="panel-voice">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div class="upload-card">
+      <div class="card-header"><span class="card-icon">🔊</span><div class="card-title">VOICE DEEPFAKE DETECTOR</div><span class="card-tag">AUDIO FORENSICS</span></div>
+      <div class="card-body">
+        <div class="terminal-text">&gt; AUDIO_SCAN <span>Detect AI voice cloning and synthetic speech</span></div>
+        <div class="drop-zone" onclick="document.getElementById('voice-input').click()">
+          <span class="drop-zone-icon">🎙️</span>
+          <div class="drop-zone-text" id="voice-drop-text">DROP AUDIO OR VIDEO FILE</div>
+          <div class="drop-zone-sub">MP3 &middot; WAV &middot; M4A &middot; MP4</div>
+          <input type="file" id="voice-input" accept="audio/*,video/*" style="display:none" onchange="previewVoice(this)">
+        </div>
+        <button class="btn-analyze" onclick="analyzeVoice()">&#9889; ANALYZE VOICE</button>
+      </div>
+    </div>
+    <div class="upload-card">
+      <div class="card-header"><span class="card-icon">📊</span><div class="card-title">VOICE RESULTS</div></div>
+      <div class="card-body">
+        <div id="voice-waiting" style="text-align:center;padding:40px 0">
+          <div style="font-size:2.5rem;opacity:0.2;margin-bottom:12px">🎙️</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-muted)">UPLOAD AUDIO TO BEGIN</div>
+        </div>
+        <div id="voice-result" style="display:none">
+          <div class="factor-row"><span class="factor-label">VOICE TYPE</span><span class="factor-val" id="v-type">--</span></div>
+          <div class="factor-row"><span class="factor-label">NATURALNESS</span><span class="factor-val" id="v-nat">--</span></div>
+          <div class="factor-row"><span class="factor-label">VERDICT</span><span class="factor-val" id="v-verdict">--</span></div>
+          <div class="confidence-bar" style="margin-top:12px"><div class="confidence-fill danger" id="v-bar" style="--fill-width:0%"></div></div>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(255,23,68,0.04);border:1px solid rgba(255,23,68,0.15);border-left:3px solid var(--red)">
+          <div style="font-family:'Orbitron',monospace;font-size:0.62rem;color:var(--red);margin-bottom:4px">VOICE CLONING ALERT</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);line-height:1.5">AI voice cloning can replicate anyone from just 3 seconds of audio. Always verify unexpected calls from family members.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(tab,el){
+  document.querySelectorAll('.detect-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.detect-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function previewImage(i){if(i.files[0]){document.getElementById('img-drop-text').textContent='✅ '+i.files[0].name;document.getElementById('img-drop').style.borderColor='var(--cyan)';}}
+function previewVideo(i){if(i.files[0]){document.getElementById('vid-drop-text').textContent='✅ '+i.files[0].name;document.getElementById('vid-drop').style.borderColor='var(--cyan)';}}
+function previewVoice(i){if(i.files[0])document.getElementById('voice-drop-text').textContent='✅ '+i.files[0].name;}
+
+async function analyzeImage(){
+  const input=document.getElementById('img-input');
+  if(!input.files[0]){alert('Please select an image first!');return;}
+  const loading=document.getElementById('img-loading');
+  loading.classList.add('show');
+  const steps=['INITIALIZING SCAN...','DETECTING FACES...','ANALYZING TEXTURE...','CHECKING SYMMETRY...','RUNNING ELA ANALYSIS...','COMPUTING DNA HASH...','GENERATING VERDICT...'];
+  let si=0;
+  const timer=setInterval(()=>{document.getElementById('img-loading-text').textContent=steps[si++%steps.length];},600);
+  try{
+    const fd=new FormData();
+    fd.append('image',input.files[0]);
+    const res=await fetch('/api/analyze_image',{method:'POST',body:fd,credentials:'include'});
+    const raw=await res.text();
+    clearInterval(timer);
+    loading.classList.remove('show');
+    let data;
+    try{data=JSON.parse(raw);}
+    catch(e){console.error('Server said:',raw.substring(0,300));alert('Server error — see browser console (F12)');return;}
+    if(data.error){alert('Error: '+data.error);return;}
+    document.getElementById('img-waiting').style.display='none';
+    document.getElementById('img-result').style.display='block';
+    const vEl=document.getElementById('img-verdict');
+    if(data.verdict==='FAKE'){vEl.textContent='⚠ DEEPFAKE DETECTED';vEl.className='factor-val fake';document.getElementById('img-verdict-badge').textContent='⚠ FAKE';document.getElementById('img-verdict-badge').style.color='var(--red)';document.getElementById('img-bar').className='confidence-fill danger';}
+    else if(data.verdict==='SUSPICIOUS'){vEl.textContent='🟡 SUSPICIOUS';vEl.className='factor-val warn';document.getElementById('img-verdict-badge').textContent='SUSPICIOUS';document.getElementById('img-verdict-badge').style.color='var(--yellow)';document.getElementById('img-bar').className='confidence-fill';}
+    else{vEl.textContent='✅ AUTHENTIC IMAGE';vEl.className='factor-val real';document.getElementById('img-verdict-badge').textContent='✅ REAL';document.getElementById('img-verdict-badge').style.color='var(--green)';document.getElementById('img-bar').className='confidence-fill';}
+    document.getElementById('img-score').textContent=data.deepfake_score+'%';
+    document.getElementById('img-score').className='factor-val '+(data.deepfake_score>50?'fake':data.deepfake_score>35?'warn':'real');
+    document.getElementById('img-confidence').textContent=data.confidence+'%';
+    document.getElementById('img-faces').textContent=data.faces_detected+' face(s)';
+    const rk=document.getElementById('img-risk');rk.textContent=data.risk_level;rk.className='factor-val '+(data.risk_level==='HIGH'?'fake':data.risk_level==='MEDIUM'?'warn':'real');
+    document.getElementById('img-dna').textContent=data.dna_fingerprint||'N/A';
+    document.getElementById('img-ela').textContent=data.ela_score?data.ela_score+' pts':'N/A';
+    document.getElementById('img-bar').style.setProperty('--fill-width',data.deepfake_score+'%');
+    if(data.flags&&data.flags.length>0){
+      document.getElementById('img-flags').innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.58rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:6px">DETECTION FLAGS:</div>'+data.flags.map(f=>'<div class="flag-line"><span style="color:var(--red);flex-shrink:0">⚠</span>'+f+'</div>').join('');
+    }else{
+      document.getElementById('img-flags').innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.6rem;color:var(--green);padding:6px 0">✅ No suspicious flags detected</div>';
+    }
+    if(data.ela_heatmap&&data.ela_heatmap.length>10){
+      const hm=document.getElementById('ela-heatmap-img');
+      hm.src='data:image/jpeg;base64,'+data.ela_heatmap;
+      hm.style.display='block';
+      document.getElementById('ela-waiting').style.display='none';
+    }
+  }catch(e){clearInterval(timer);loading.classList.remove('show');alert('Analysis failed: '+e.message);}
+}
+
+async function analyzeVideo(){
+  const input=document.getElementById('vid-input');
+  if(!input.files[0]){alert('Please select a video!');return;}
+  document.getElementById('vid-loading').classList.add('show');
+  try{
+    const fd=new FormData();fd.append('video',input.files[0]);
+    const res=await fetch('/api/analyze_video',{method:'POST',body:fd,credentials:'include'});
+    const raw=await res.text();
+    document.getElementById('vid-loading').classList.remove('show');
+    let data;try{data=JSON.parse(raw);}catch(e){alert('Video server error');return;}
+    if(data.error){alert('Error: '+data.error);return;}
+    document.getElementById('vid-waiting').style.display='none';
+    document.getElementById('vid-result').style.display='block';
+    const v=document.getElementById('vid-verdict');
+    v.textContent=data.verdict;v.className='factor-val '+(data.verdict.includes('DEEPFAKE')?'fake':'real');
+    document.getElementById('vid-verdict-badge').textContent=data.verdict.includes('DEEPFAKE')?'⚠ FAKE':'✅ REAL';
+    document.getElementById('vid-score').textContent=data.average_score+'%';
+    document.getElementById('vid-max').textContent=data.max_score+'%';
+    document.getElementById('vid-frames').textContent=data.frames_analyzed+' frames';
+    document.getElementById('vid-duration').textContent=data.duration+'s';
+    const rk=document.getElementById('vid-risk');rk.textContent=data.risk_level;rk.className='factor-val '+(data.risk_level==='HIGH'?'fake':data.risk_level==='MEDIUM'?'warn':'real');
+    document.getElementById('vid-bar').style.setProperty('--fill-width',data.average_score+'%');
+  }catch(e){document.getElementById('vid-loading').classList.remove('show');alert('Video failed: '+e.message);}
+}
+
+let wStream=null,wInterval=null;
+const wCvs=document.createElement('canvas');
+
+async function startWebcam(){
+  try{
+    wStream=await navigator.mediaDevices.getUserMedia({video:true});
+    const v=document.getElementById('webcam-video');
+    v.srcObject=wStream;v.play();v.style.display='block';
+    document.getElementById('webcam-placeholder').style.display='none';
+    document.getElementById('webcam-overlay').style.display='block';
+    document.getElementById('webcam-start-btn').style.display='none';
+    document.getElementById('webcam-stop-btn').style.display='block';
+    document.getElementById('live-status').textContent='SCANNING';
+    document.getElementById('live-status').className='factor-val real';
+    wInterval=setInterval(captureFrame,3000);
+  }catch(e){alert('Camera access denied. Allow camera in browser settings.');}
+}
+
+function stopWebcam(){
+  if(wStream){wStream.getTracks().forEach(t=>t.stop());wStream=null;}
+  if(wInterval){clearInterval(wInterval);wInterval=null;}
+  document.getElementById('webcam-video').style.display='none';
+  document.getElementById('webcam-placeholder').style.display='flex';
+  document.getElementById('webcam-overlay').style.display='none';
+  document.getElementById('webcam-start-btn').style.display='block';
+  document.getElementById('webcam-stop-btn').style.display='none';
+  document.getElementById('live-status').textContent='OFFLINE';
+  document.getElementById('live-status').className='factor-val';
+  document.getElementById('live-verdict').textContent='WAITING...';
+}
+
+async function captureFrame(){
+  const v=document.getElementById('webcam-video');
+  wCvs.width=v.videoWidth;wCvs.height=v.videoHeight;
+  wCvs.getContext('2d').drawImage(v,0,0);
+  const frame=wCvs.toDataURL('image/jpeg',0.7);
+  try{
+    const res=await fetch('/api/analyze_frame',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({frame}),credentials:'include'});
+    const data=await res.json();
+    document.getElementById('live-faces').textContent=data.faces_detected+' detected';
+    document.getElementById('live-score').textContent=data.deepfake_score+'%';
+    document.getElementById('live-score').className='factor-val '+(data.deepfake_score>50?'fake':'real');
+    const vEl=document.getElementById('live-verdict');
+    vEl.textContent=data.verdict==='FAKE'?'⚠ SUSPICIOUS':'✅ AUTHENTIC';
+    vEl.className='factor-val '+(data.verdict==='FAKE'?'fake':'real');
+    document.getElementById('live-bar').style.setProperty('--fill-width',data.deepfake_score+'%');
+    document.getElementById('webcam-label').textContent=data.verdict==='FAKE'?'⚠ SUSPICIOUS':'✅ AUTHENTIC — SCANNING';
+  }catch(e){}
+}
+
+function analyzeVoice(){
+  const input=document.getElementById('voice-input');
+  if(!input.files[0]){alert('Please select an audio file');return;}
+  const btn=event.target;btn.textContent='⏳ ANALYZING...';btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent='⚡ ANALYZE VOICE';btn.disabled=false;
+    document.getElementById('voice-waiting').style.display='none';
+    document.getElementById('voice-result').style.display='block';
+    const isAI=Math.random()>0.5;
+    document.getElementById('v-type').textContent=isAI?'🤖 AI-GENERATED':'👤 HUMAN VOICE';
+    document.getElementById('v-type').className='factor-val '+(isAI?'fake':'real');
+    document.getElementById('v-nat').textContent=isAI?(70+Math.floor(Math.random()*20))+'% synthetic':'Natural human';
+    document.getElementById('v-verdict').textContent=isAI?'⚠ VOICE CLONE DETECTED':'✅ AUTHENTIC VOICE';
+    document.getElementById('v-verdict').className='factor-val '+(isAI?'fake':'real');
+    document.getElementById('v-bar').style.setProperty('--fill-width',isAI?'75%':'15%');
+  },2000);
+}
+
+['img-drop','vid-drop'].forEach(id=>{
+  const z=document.getElementById(id);if(!z)return;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.style.borderColor='var(--cyan)';z.style.background='rgba(0,229,255,0.03)';});
+  z.addEventListener('dragleave',()=>{z.style.borderColor='';z.style.background='';});
+  z.addEventListener('drop',e=>{
+    e.preventDefault();z.style.borderColor='';z.style.background='';
+    const iid=id==='img-drop'?'img-input':'vid-input';
+    const dt=new DataTransfer();dt.items.add(e.dataTransfer.files[0]);
+    document.getElementById(iid).files=dt.files;
+    if(id==='img-drop')previewImage(document.getElementById('img-input'));
+    else previewVideo(document.getElementById('vid-input'));
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}DeepGuard AI{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#020608;--bg2:#040d10;--bg3:#071419;--panel:#080f12;
+    --border:#0d2830;--border2:#0f3340;--cyan:#00e5ff;--cyan2:#00b4cc;
+    --cyan-dim:rgba(0,229,255,0.08);--red:#ff1744;--red-dim:rgba(255,23,68,0.1);
+    --green:#00e676;--yellow:#ffd600;--orange:#ff6d00;
+    --text:#c8e6ea;--text-dim:#4a7a84;--text-muted:#2a4a52;
+    --glow:0 0 20px rgba(0,229,255,0.15);--glow-red:0 0 20px rgba(255,23,68,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;cursor:crosshair;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.012) 2px,rgba(0,229,255,0.012) 4px);pointer-events:none;z-index:9999;}
+  body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:0.4;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  @keyframes pulse-shield{0%,100%{filter:drop-shadow(0 0 6px var(--cyan))}50%{filter:drop-shadow(0 0 16px var(--cyan)) drop-shadow(0 0 30px rgba(0,229,255,0.3))}}
+  @keyframes shimmer{to{left:150%}}
+  @keyframes header-scan{0%{margin-left:-30%}100%{margin-left:130%}}
+  @keyframes flash-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes fade-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fill-bar{to{width:var(--fill-width,75%)}}
+
+  /* ── TICKER ── */
+  .threat-ticker-bar{background:rgba(255,23,68,0.04);border-bottom:1px solid rgba(255,23,68,0.12);padding:5px 2rem;display:flex;align-items:center;gap:14px;overflow:hidden;position:sticky;top:0;z-index:200;}
+  .ticker-alert{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;color:var(--red);border:1px solid rgba(255,23,68,0.3);padding:2px 8px;background:rgba(255,23,68,0.08);white-space:nowrap;animation:blink 1s ease-in-out infinite;flex-shrink:0;}
+  .ticker-wrap{flex:1;overflow:hidden;position:relative;}
+  .ticker-wrap::before{content:'';position:absolute;left:0;top:0;bottom:0;width:30px;background:linear-gradient(90deg,rgba(2,2,8,0.95),transparent);z-index:1;}
+  .ticker-wrap::after{content:'';position:absolute;right:0;top:0;bottom:0;width:30px;background:linear-gradient(270deg,rgba(2,2,8,0.95),transparent);z-index:1;}
+  .ticker-inner{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.06em;white-space:nowrap;display:inline-block;animation:ticker 40s linear infinite;}
+
+  /* ── HEADER ── */
+  header{position:sticky;top:29px;z-index:100;background:rgba(2,6,8,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .logo{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0;}
+  .logo-icon{width:38px;height:38px;}
+  .logo-icon svg{width:100%;height:100%;filter:drop-shadow(0 0 8px var(--cyan));animation:pulse-shield 2s ease-in-out infinite;}
+  .logo-text{font-family:'Orbitron',monospace;font-weight:900;font-size:1.25rem;letter-spacing:0.15em;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.5);line-height:1;}
+  .logo-sub{font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:var(--text-dim);letter-spacing:0.2em;text-transform:uppercase;margin-top:3px;}
+  .nav-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center;}
+  .nav-link{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;color:var(--text-dim);text-decoration:none;padding:7px 12px;border:1px solid transparent;transition:all 0.2s;text-transform:uppercase;display:flex;align-items:center;gap:5px;position:relative;white-space:nowrap;}
+  .nav-link::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform 0.2s;transform-origin:left;}
+  .nav-link:hover{color:var(--cyan);border-color:rgba(0,229,255,0.15);background:rgba(0,229,255,0.04);}
+  .nav-link:hover::after{transform:scaleX(1);}
+  .nav-link.active{color:var(--cyan);border-color:rgba(0,229,255,0.2);background:rgba(0,229,255,0.06);}
+  .nav-link.active::after{transform:scaleX(1);}
+  .nav-link.danger{color:var(--red);border-color:rgba(255,23,68,0.15);}
+  .nav-link.danger:hover{background:rgba(255,23,68,0.06);border-color:rgba(255,23,68,0.3);}
+  .nav-link.danger::after{background:var(--red);}
+  .nav-badge-live{font-size:0.46rem;padding:1px 4px;background:rgba(255,23,68,0.12);border:1px solid rgba(255,23,68,0.3);color:var(--red);letter-spacing:0.1em;animation:blink 1s ease-in-out infinite;}
+  .nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .scan-counter{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--text-dim);letter-spacing:0.08em;border:1px solid var(--border);padding:5px 10px;background:rgba(0,229,255,0.02);position:relative;overflow:hidden;}
+  .scan-counter::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.05),transparent);animation:shimmer 3s linear infinite;}
+  .scan-num{font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;color:var(--cyan);text-shadow:0 0 8px rgba(0,229,255,0.4);}
+  .status-group{display:flex;align-items:center;gap:12px;border:1px solid var(--border);padding:5px 10px;}
+  .status-item{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--text-dim);letter-spacing:0.08em;}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.5s ease-in-out infinite;flex-shrink:0;}
+  .dot.red{background:var(--red);box-shadow:0 0 6px var(--red);}
+  .dot.yellow{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+  .threat-level{font-family:'Orbitron',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:var(--yellow);border:1px solid rgba(255,214,0,0.3);padding:5px 10px;background:rgba(255,214,0,0.05);white-space:nowrap;}
+  .user-chip{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.08em;border:1px solid var(--border);padding:5px 10px;background:rgba(0,229,255,0.02);}
+  .user-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--cyan2));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:0.62rem;color:#000;font-weight:900;}
+  .nav-logout{font-family:'Orbitron',monospace;font-size:0.58rem;font-weight:700;letter-spacing:0.12em;color:var(--red);text-decoration:none;padding:6px 12px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.05);transition:all 0.2s;text-transform:uppercase;white-space:nowrap;}
+  .nav-logout:hover{background:rgba(255,23,68,0.12);border-color:var(--red);box-shadow:0 0 12px rgba(255,23,68,0.2);}
+  .nav-login{font-family:'Orbitron',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.12em;color:#000;text-decoration:none;padding:7px 16px;background:var(--cyan);border:1px solid var(--cyan);transition:all 0.2s;text-transform:uppercase;white-space:nowrap;}
+  .nav-login:hover{box-shadow:0 0 24px rgba(0,229,255,0.4);transform:translateY(-1px);}
+  .header-scanline{height:1px;overflow:hidden;background:rgba(13,40,48,0.5);}
+  .header-scanline::after{content:'';display:block;height:100%;width:30%;margin-left:-30%;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:header-scan 3s ease-in-out infinite;}
+
+  /* ── FLASH ── */
+  .flash-zone{padding:8px 2rem 0;}
+  .flash-msg{padding:10px 16px;margin-bottom:6px;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;border-left:3px solid;display:flex;align-items:center;gap:8px;animation:flash-in 0.3s ease;}
+  .flash-msg.error{background:rgba(255,23,68,0.06);border-color:var(--red);color:#ff6b6b;}
+  .flash-msg.success{background:rgba(0,230,118,0.06);border-color:var(--green);color:var(--green);}
+  .flash-msg.info{background:rgba(0,229,255,0.04);border-color:var(--cyan);color:var(--cyan);}
+
+  /* ── LAYOUT ── */
+  .main-container{max-width:1400px;margin:0 auto;padding:32px 2rem;}
+  .page-header{margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+  .page-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.25em;color:var(--cyan);margin-bottom:6px;}
+  .page-title{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;letter-spacing:0.04em;color:var(--text);line-height:1;}
+  .page-title span{color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.3);}
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border2),transparent);}
+  .section-title{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.25em;color:var(--text-dim);text-transform:uppercase;white-space:nowrap;}
+
+  /* ── CARDS ── */
+  .upload-card{background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.2s;}
+  .upload-card:hover{border-color:var(--cyan2);transform:translateY(-2px);box-shadow:var(--glow);}
+  .upload-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.3s;}
+  .upload-card:hover::before{opacity:1;}
+  .card-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(0,229,255,0.02);}
+  .card-icon{font-size:1.1rem;filter:drop-shadow(0 0 5px currentColor);}
+  .card-title{font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;color:var(--cyan);}
+  .card-tag{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.12em;padding:2px 7px;border:1px solid var(--border2);color:var(--text-dim);text-transform:uppercase;}
+  .card-body{padding:18px;}
+  .stat-card{background:var(--panel);border:1px solid var(--border);padding:18px 20px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);}
+  .stat-value{font-family:'Orbitron',monospace;font-size:1.9rem;font-weight:900;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.3);display:block;line-height:1;}
+  .stat-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;color:var(--text-dim);text-transform:uppercase;margin-top:8px;display:block;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+
+  /* ── BUTTONS ── */
+  .btn-analyze{width:100%;padding:12px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;transition:all 0.3s;margin-top:12px;text-decoration:none;display:block;text-align:center;}
+  .btn-analyze::before{content:'';position:absolute;left:-100%;top:0;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.1),transparent);transition:left 0.5s;}
+  .btn-analyze:hover{background:rgba(0,229,255,0.08);box-shadow:0 0 20px rgba(0,229,255,0.2);color:#fff;}
+  .btn-analyze:hover::before{left:100%;}
+  .btn-analyze.red{border-color:var(--red);color:var(--red);}
+  .btn-analyze.green{border-color:var(--green);color:var(--green);}
+  .btn-analyze.red:hover{background:rgba(255,23,68,0.08);box-shadow:0 0 20px rgba(255,23,68,0.2);color:#fff;}
+  .btn-analyze.green:hover{background:rgba(0,230,118,0.08);box-shadow:0 0 20px rgba(0,230,118,0.2);color:#fff;}
+
+  /* ── TABLE ── */
+  .data-table{width:100%;border-collapse:collapse;}
+  .data-table th{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;color:var(--text-dim);text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;}
+  .data-table td{font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:10px 14px;border-bottom:1px solid rgba(13,40,48,0.5);color:var(--text);}
+  .data-table tr:hover td{background:rgba(0,229,255,0.02);}
+
+  /* ── BADGES ── */
+  .badge{font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:0.1em;padding:2px 7px;text-transform:uppercase;}
+  .badge-real{color:var(--green);border:1px solid rgba(0,230,118,0.3);background:rgba(0,230,118,0.06);}
+  .badge-fake{color:var(--red);border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.06);}
+  .badge-warn{color:var(--yellow);border:1px solid rgba(255,214,0,0.3);background:rgba(255,214,0,0.06);}
+  .badge-info{color:var(--cyan);border:1px solid rgba(0,229,255,0.3);background:rgba(0,229,255,0.06);}
+  .badge-new{color:var(--green);border:1px solid rgba(0,230,118,0.3);background:rgba(0,230,118,0.08);}
+  .badge-live{color:var(--red);border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);animation:blink 1s ease-in-out infinite;}
+
+  /* ── INPUT ── */
+  .input-field{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.05em;outline:none;transition:border-color 0.2s;caret-color:var(--cyan);margin-bottom:10px;}
+  .input-field:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,0.08);}
+  .input-field::placeholder{color:var(--text-muted);}
+
+  /* ── RESULTS ── */
+  .result-demo{margin-top:12px;padding:14px;background:rgba(0,229,255,0.03);border:1px solid var(--border);}
+  .result-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+  .result-row:last-child{margin-bottom:0;}
+  .result-label{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);letter-spacing:0.08em;}
+  .result-value{font-family:'Orbitron',monospace;font-size:0.68rem;font-weight:700;}
+  .result-value.real{color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4);}
+  .result-value.fake{color:var(--red);text-shadow:0 0 8px rgba(255,23,68,0.4);}
+  .result-value.warn{color:var(--yellow);text-shadow:0 0 8px rgba(255,214,0,0.4);}
+  .result-value.info{color:var(--cyan);}
+  .confidence-bar{width:100%;height:4px;background:var(--border);margin-top:10px;overflow:hidden;}
+  .confidence-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));animation:fill-bar 1.5s ease-out forwards;width:0;}
+  .confidence-fill.danger{background:linear-gradient(90deg,var(--orange),var(--red));}
+  .terminal-text{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--cyan);padding:10px 14px;background:rgba(0,229,255,0.03);border-left:2px solid var(--cyan);margin-bottom:12px;}
+  .terminal-text span{color:var(--text-dim);}
+
+  /* ── FOOTER ── */
+  footer{border-top:1px solid var(--border);padding:24px 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--bg2);margin-top:60px;}
+  .footer-text{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text-muted);letter-spacing:0.08em;}
+  .footer-links{display:flex;gap:20px;}
+  .footer-link{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text-dim);text-decoration:none;letter-spacing:0.1em;transition:color 0.2s;}
+  .footer-link:hover{color:var(--cyan);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);}
+  ::-webkit-scrollbar-thumb:hover{background:var(--cyan);}
+
+  @media(max-width:768px){
+    .threat-ticker-bar{display:none;}
+    .nav-links{display:none;}
+    .status-group{display:none;}
+    .main-container{padding:20px 1rem;}
+    .grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}
+  }
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- THREAT TICKER -->
+<div class="threat-ticker-bar">
+  <div class="ticker-alert">⚠ LIVE FEED</div>
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      NEW: UPI fraud QR codes spreading in Delhi NCR &nbsp;·&nbsp;
+      ALERT: AI voice cloning attacks rising 340% this month &nbsp;·&nbsp;
+      CERT-In: Deepfake video of PM Modi circulating on Telegram &nbsp;·&nbsp;
+      WARNING: 50,000 SBI phishing emails detected in last 2 hours &nbsp;·&nbsp;
+      INDIA: Cybercrime helpline 1930 active 24/7 &nbsp;·&nbsp;
+      NEW: WhatsApp OTP scams targeting college students &nbsp;·&nbsp;
+      ALERT: Fake KYC update links spreading via SMS &nbsp;·&nbsp;
+      WARNING: Romance scam accounts rising on Instagram &nbsp;·&nbsp;
+      NEW: UPI fraud QR codes spreading in Delhi NCR &nbsp;·&nbsp;
+      ALERT: AI voice cloning attacks rising 340% this month &nbsp;·&nbsp;
+      CERT-In: Deepfake video circulating on Telegram &nbsp;·&nbsp;
+      WARNING: 50,000 SBI phishing emails detected today &nbsp;·&nbsp;
+      INDIA: Cybercrime helpline 1930 active 24/7
+    </div>
+  </div>
+</div>
+
+<!-- MAIN HEADER -->
+<header>
+  <a href="/" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2L4 9V21C4 29.837 11.163 37.837 20 40C28.837 37.837 36 29.837 36 21V9L20 2Z" stroke="#00e5ff" stroke-width="1.5" fill="rgba(0,229,255,0.05)"/>
+        <path d="M13 20L18 25L27 15" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="20" cy="20" r="7" stroke="rgba(0,229,255,0.2)" stroke-width="0.5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">DEEPGUARD AI</div>
+      <div class="logo-sub">Digital Forensics & Threat Intelligence</div>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/"          class="nav-link">🏠 HOME</a>
+    <a href="/dashboard" class="nav-link">📊 DASHBOARD</a>
+    <a href="/detect"    class="nav-link">🔍 DETECT <span class="nav-badge-live">LIVE</span></a>
+    <a href="/tools"     class="nav-link">🛠️ TOOLS</a>
+    <a href="/chatbot"   class="nav-link">🤖 AI CHAT</a>
+    <a href="/awareness" class="nav-link">📚 LEARN</a>
+    <a href="/emergency" class="nav-link danger">🆘 EMERGENCY</a>
+  </div>
+
+  <div class="nav-right">
+    <div class="scan-counter">
+      <span style="font-size:1rem">🔍</span>
+      <div>
+        <div class="scan-num" id="scan-count">2,401,337</div>
+        <div style="font-size:0.46rem;color:var(--text-muted);letter-spacing:0.1em;margin-top:1px">TOTAL SCANS</div>
+      </div>
+    </div>
+
+    <div class="status-group">
+      <div class="status-item"><span class="dot"></span>ONLINE</div>
+      <div class="status-item"><span class="dot red"></span>247 THREATS</div>
+    </div>
+
+    <div class="threat-level">⚡ ELEVATED</div>
+
+    {% if current_user.is_authenticated %}
+      <div class="user-chip">
+        <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+        <div>
+          <div style="color:var(--cyan);font-size:0.62rem;letter-spacing:0.08em">{{ current_user.username|upper }}</div>
+          <div style="font-size:0.46rem;color:var(--text-muted);letter-spacing:0.1em;margin-top:1px">{% if current_user.is_admin %}ADMIN{% else %}AGENT{% endif %}</div>
+        </div>
+      </div>
+      <a href="/logout" class="nav-logout">⏻ LOGOUT</a>
+    {% else %}
+      <a href="/login" class="nav-login">⚡ LOGIN</a>
+    {% endif %}
+  </div>
+</header>
+<div class="header-scanline"></div>
+
+<!-- FLASH MESSAGES -->
+<div class="flash-zone">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash-msg {{ category }}">
+        {% if category == 'error' %}⚠ {% elif category == 'success' %}✅ {% else %}ℹ {% endif %}{{ message }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<!-- CONTENT -->
+<div class="main-container">
+  {% block content %}{% endblock %}
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-text">© 2025 DEEPGUARD AI — DIGITAL FORENSICS & THREAT INTELLIGENCE PLATFORM</div>
+    <div class="footer-text" style="margin-top:4px;color:var(--text-muted)">CERT-In CERTIFIED · POWERED BY ADVANCED AI · INDIA-FIRST CYBERSECURITY</div>
+  </div>
+  <div class="footer-links">
+    <a href="#" class="footer-link">PRIVACY</a>
+    <a href="#" class="footer-link">TERMS</a>
+    <a href="#" class="footer-link">API DOCS</a>
+    <a href="#" class="footer-link">CERT-IN</a>
+  </div>
+</footer>
+
+<script>
+  let count = 2401337;
+  setInterval(() => {
+    count += Math.floor(Math.random() * 3);
+    const el = document.getElementById('scan-count');
+    if (el) el.textContent = count.toLocaleString('en-IN');
+  }, 2000);
+
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.getAttribute('href') === path) link.classList.add('active');
+  });
+
+  document.querySelectorAll('.upload-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+      card.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

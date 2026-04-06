@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}Cyber Tools — DeepGuard AI{% endblock %}
+{% block content %}
+<style>
+.tools-wrap{max-width:1100px;margin:0 auto;padding:30px 20px;}
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+.card{background:#060e12;border:1px solid #0d2830;overflow:hidden;transition:all 0.3s;}
+.card:hover{border-color:#0f3340;}
+.card.danger{border-color:rgba(255,23,68,0.2);}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #0d2830;background:rgba(0,229,255,0.02);}
+.card-head.red{background:rgba(255,23,68,0.03);}
+.card-title{font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;color:#00e5ff;}
+.card-title.red{color:#ff1744;}
+.card-body{padding:20px;}
+.info-box{border-left:2px solid #00e5ff;padding:8px 12px;background:rgba(0,229,255,0.03);font-family:'Share Tech Mono',monospace;font-size:0.63rem;color:#4a7a84;line-height:1.7;margin-bottom:12px;}
+.info-box.red{border-color:#ff1744;background:rgba(255,23,68,0.03);}
+.input-field{width:100%;background:#020608;border:1px solid #0d2830;color:#c8e6ea;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:0.75rem;outline:none;transition:all 0.25s;margin-bottom:10px;}
+.input-field:focus{border-color:#00e5ff;}
+.input-field::placeholder{color:#1e3a42;}
+textarea.input-field{resize:none;line-height:1.6;}
+.btn{width:100%;padding:12px;background:transparent;border:1px solid #00e5ff;color:#00e5ff;font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.15em;cursor:pointer;transition:all 0.3s;}
+.btn:hover{background:rgba(0,229,255,0.07);color:#fff;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn.red{border-color:#ff1744;color:#ff1744;}
+.btn.red:hover{background:rgba(255,23,68,0.07);color:#fff;}
+.result-box{margin-top:14px;padding:14px;background:rgba(0,229,255,0.03);border:1px solid #0d2830;display:none;}
+.result-box.show{display:block;}
+.result-box.red-bg{background:rgba(255,23,68,0.03);}
+.rrow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #0d2830;gap:8px;}
+.rrow:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.rl{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:#4a7a84;letter-spacing:0.08em;white-space:nowrap;}
+.rv{font-family:'Orbitron',monospace;font-size:0.68rem;font-weight:700;text-align:right;}
+.rv.fake{color:#ff1744;} .rv.real{color:#00e676;} .rv.warn{color:#ffd600;} .rv.info{color:#00e5ff;}
+.verdict-banner{text-align:center;padding:14px;margin-bottom:12px;font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;letter-spacing:0.1em;}
+.verdict-danger{background:rgba(255,23,68,0.1);border:1px solid rgba(255,23,68,0.3);color:#ff1744;}
+.verdict-safe{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:#00e676;}
+.verdict-warn{background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3);color:#ffd600;}
+.flag-item{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:#ffd600;padding:4px 8px;background:rgba(255,214,0,0.06);border-left:2px solid #ffd600;margin-bottom:4px;}
+.breach-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #0d2830;}
+.breach-item:last-child{border-bottom:none;}
+.breach-name{font-family:'Orbitron',monospace;font-size:0.68rem;color:#ff1744;font-weight:700;}
+.score-big{font-family:'Orbitron',monospace;font-size:2.5rem;font-weight:900;color:#ff1744;line-height:1;}
+.score-meter{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.score-bars{flex:1;}
+.sbar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.sbar-lbl{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:#4a7a84;width:80px;text-align:right;}
+.sbar-track{flex:1;height:5px;background:#0d2830;overflow:hidden;}
+.sbar-fill{height:100%;transition:width 1.5s ease;}
+.qr-wrap{width:110px;height:110px;background:white;padding:7px;margin:0 auto 14px;}
+.qr-inner{width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 5px,#000 5px,#000 6px),repeating-linear-gradient(90deg,transparent,transparent 5px,#000 5px,#000 6px);background-size:6px 6px;position:relative;overflow:hidden;}
+.qr-scan{position:absolute;left:0;right:0;height:2px;background:rgba(0,229,255,0.8);animation:qrscan 1.8s linear infinite;}
+@keyframes qrscan{0%{top:0}100%{top:100%}}
+.emergency-section{background:#060e12;border:1px solid rgba(255,23,68,0.25);position:relative;overflow:hidden;}
+.emergency-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff1744,#ff6d00,#ff1744);background-size:200%;animation:flow 2s linear infinite;}
+@keyframes flow{from{background-position:0}to{background-position:200%}}
+.em-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,23,68,0.1);}
+.em-item{background:#060e12;padding:18px;text-align:center;}
+.em-title{font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;color:#ff1744;margin-bottom:6px;}
+.em-desc{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:#4a7a84;line-height:1.6;}
+@media(max-width:768px){.tools-grid{grid-template-columns:1fr;}.em-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="tools-wrap">
+  <div style="margin-bottom:20px">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:#4a7a84;margin-bottom:6px">// CYBERSECURITY ANALYSIS TOOLKIT</div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:#c8e6ea">Cyber <span style="color:#00e5ff">Tools</span></div>
+  </div>
+
+  <div class="tools-grid">
+
+    <!-- QR SCANNER -->
+    <div class="card">
+      <div class="card-head"><span>🔲</span><div class="card-title">QR CODE SAFETY SCANNER</div></div>
+      <div class="card-body">
+        <div class="info-box">Paste the URL decoded from a QR code. System checks for UPI fraud, malicious links, and phishing patterns.</div>
+        <div class="qr-wrap"><div class="qr-inner"><div class="qr-scan"></div></div></div>
+        <input type="text" class="input-field" id="qr-input" placeholder="Paste QR decoded URL here... e.g. upi://pay?pa=...">
+        <button class="btn" id="qr-btn" onclick="checkQR()">🔲 CHECK QR CODE</button>
+        <div class="result-box red-bg" id="qr-result">
+          <div class="verdict-banner" id="qr-verdict"></div>
+          <div class="rrow"><span class="rl">DECODED URL</span><span class="rv info" id="qr-url" style="font-size:0.58rem;word-break:break-all"></span></div>
+          <div class="rrow"><span class="rl">RISK SCORE</span><span class="rv fake" id="qr-score"></span></div>
+          <div class="rrow"><span class="rl">VERDICT</span><span class="rv" id="qr-verdict2"></span></div>
+          <div id="qr-flags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHISHING EMAIL -->
+    <div class="card danger">
+      <div class="card-head red"><span>📧</span><div class="card-title red">PHISHING EMAIL ANALYZER</div></div>
+      <div class="card-body">
+        <div class="info-box red">Paste suspicious email content. System detects urgency manipulation, fake links, brand impersonation, and OTP harvesting.</div>
+        <textarea class="input-field" id="email-text" rows="4" placeholder="Paste suspicious email content here..."></textarea>
+        <button class="btn red" id="phish-btn" onclick="checkPhishing()">⚡ ANALYZE FOR PHISHING</button>
+        <div class="result-box red-bg" id="phish-result">
+          <div class="score-meter">
+            <div class="score-big" id="phish-score">0</div>
+            <div class="score-bars">
+              <div class="sbar-row"><span class="sbar-lbl">URGENCY</span><div class="sbar-track"><div class="sbar-fill" id="bar-urgency" style="width:0;background:#ff1744"></div></div></div>
+              <div class="sbar-row"><span class="sbar-lbl">FAKE LINK</span><div class="sbar-track"><div class="sbar-fill" id="bar-link" style="width:0;background:#ff1744"></div></div></div>
+              <div class="sbar-row"><span class="sbar-lbl">IMPERSONATION</span><div class="sbar-track"><div class="sbar-fill" id="bar-imp" style="width:0;background:#ff6d00"></div></div></div>
+            </div>
+          </div>
+          <div class="verdict-banner" id="phish-verdict"></div>
+          <div id="phish-flags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK WEB -->
+    <div class="card danger">
+      <div class="card-head red"><span>🌑</span><div class="card-title red">DARK WEB BREACH MONITOR</div></div>
+      <div class="card-body">
+        <div class="info-box red">Enter your email to check if it appeared in known data breaches. Results are generated based on email pattern analysis.</div>
+        <input type="email" class="input-field" id="darkweb-email" placeholder="Enter your email address...">
+        <button class="btn red" id="darkweb-btn" onclick="checkDarkweb()">🌑 SCAN DARK WEB</button>
+        <div class="result-box red-bg" id="darkweb-result">
+          <div class="verdict-banner" id="darkweb-verdict"></div>
+          <div id="darkweb-breaches"></div>
+          <div id="darkweb-safe-msg" style="display:none;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#00e676;text-align:center;padding:10px">✅ No breaches found! Your email looks safe.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL CHECKER -->
+    <div class="card">
+      <div class="card-head"><span>🔗</span><div class="card-title">LINK SAFETY CHECKER</div></div>
+      <div class="card-body">
+        <div class="info-box">Paste any URL. System checks domain age signals, brand impersonation, suspicious keywords, HTTPS, and URL shorteners.</div>
+        <input type="url" class="input-field" id="url-input" placeholder="Paste any suspicious URL here...">
+        <button class="btn" id="url-btn" onclick="checkURL()">🔍 CHECK LINK SAFETY</button>
+        <div class="result-box" id="url-result">
+          <div class="verdict-banner" id="url-verdict"></div>
+          <div class="rrow"><span class="rl">RISK SCORE</span><span class="rv" id="url-score"></span></div>
+          <div class="rrow"><span class="rl">VERDICT</span><span class="rv" id="url-verdict2"></span></div>
+          <div class="rrow"><span class="rl">MESSAGE</span><span class="rv info" id="url-msg" style="font-size:0.6rem"></span></div>
+          <div id="url-flags"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EMERGENCY -->
+  <div class="emergency-section">
+    <div class="card-head red" style="border-bottom:1px solid rgba(255,23,68,0.2)">
+      <span>🆘</span><div class="card-title red">EMERGENCY CYBER HELP — VICTIM OF FRAUD?</div>
+    </div>
+    <div class="em-grid">
+      <div class="em-item"><div style="font-size:1.8rem;margin-bottom:8px">📞</div><div class="em-title">CYBERCRIME HELPLINE</div><div class="em-desc">Call <strong style="color:#ff1744">1930</strong><br>cybercrime.gov.in<br>Available 24/7</div></div>
+      <div class="em-item"><div style="font-size:1.8rem;margin-bottom:8px">🏛️</div><div class="em-title">CERT-In INDIA</div><div class="em-desc">incident@cert-in.org.in<br>1800-11-4949<br>Toll free · 24/7</div></div>
+      <div class="em-item"><div style="font-size:1.8rem;margin-bottom:8px">📄</div><div class="em-title">FILE COMPLAINT</div><div class="em-desc">cybercrime.gov.in<br>Online FIR filing<br>Step-by-step guide</div></div>
+    </div>
+    <div style="padding:14px;display:flex;gap:12px;flex-wrap:wrap">
+      <a href="https://cybercrime.gov.in" target="_blank" class="btn red" style="flex:1;min-width:160px;text-align:center;text-decoration:none;display:block;padding:12px">🆘 REPORT CYBERCRIME</a>
+      <a href="tel:1930" class="btn" style="flex:1;min-width:160px;text-align:center;text-decoration:none;display:block;padding:12px;border-color:#00e676;color:#00e676">📞 CALL 1930</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function checkQR() {
+  const url = document.getElementById('qr-input').value.trim();
+  if (!url) { alert('Please enter a QR decoded URL'); return; }
+  const btn = document.getElementById('qr-btn');
+  btn.textContent = '⏳ CHECKING...'; btn.disabled = true;
+  fetch('/api/qr_check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url}) })
+    .then(r => r.json()).then(data => {
+      const isBad = data.score > 50;
+      document.getElementById('qr-url').textContent = data.decoded_url || url;
+      document.getElementById('qr-score').textContent = data.score + '/100';
+      const v = document.getElementById('qr-verdict');
+      v.textContent = isBad ? '🔴 DANGEROUS QR CODE' : data.score > 20 ? '⚠ SUSPICIOUS' : '✅ SAFE';
+      v.className = 'verdict-banner ' + (isBad ? 'verdict-danger' : data.score > 20 ? 'verdict-warn' : 'verdict-safe');
+      document.getElementById('qr-verdict2').textContent = data.verdict;
+      document.getElementById('qr-verdict2').className = 'rv ' + (isBad ? 'fake' : 'real');
+      const fl = document.getElementById('qr-flags'); fl.innerHTML = '';
+      if (data.flags) data.flags.forEach(f => { fl.innerHTML += `<div class="flag-item">⚠ ${f}</div>`; });
+      document.getElementById('qr-result').classList.add('show');
+      btn.textContent = '✅ DONE'; btn.disabled = false;
+    }).catch(e => { alert('Error: ' + e); btn.textContent = '🔲 CHECK QR CODE'; btn.disabled = false; });
+}
+
+function checkPhishing() {
+  const text = document.getElementById('email-text').value.trim();
+  if (!text) { alert('Please paste email content first'); return; }
+  const btn = document.getElementById('phish-btn');
+  btn.textContent = '⏳ SCANNING...'; btn.disabled = true;
+  fetch('/api/phishing_check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email_text: text}) })
+    .then(r => r.json()).then(data => {
+      document.getElementById('phish-score').textContent = data.score;
+      const isPhish = data.score > 50;
+      document.getElementById('bar-urgency').style.width = Math.min(100, data.score * 1.1) + '%';
+      document.getElementById('bar-link').style.width = Math.min(100, data.score) + '%';
+      document.getElementById('bar-imp').style.width = Math.min(100, data.score * 0.8) + '%';
+      const v = document.getElementById('phish-verdict');
+      v.textContent = isPhish ? '🚨 HIGH CONFIDENCE PHISHING' : data.score > 25 ? '⚠ SUSPICIOUS EMAIL' : '✅ LOOKS LEGITIMATE';
+      v.className = 'verdict-banner ' + (isPhish ? 'verdict-danger' : data.score > 25 ? 'verdict-warn' : 'verdict-safe');
+      const fl = document.getElementById('phish-flags'); fl.innerHTML = '';
+      if (data.flags) data.flags.forEach(f => { fl.innerHTML += `<div class="flag-item">⚠ ${f}</div>`; });
+      document.getElementById('phish-result').classList.add('show');
+      btn.textContent = '✅ DONE'; btn.disabled = false;
+    }).catch(e => { alert('Error: ' + e); btn.textContent = '⚡ ANALYZE FOR PHISHING'; btn.disabled = false; });
+}
+
+function checkDarkweb() {
+  const email = document.getElementById('darkweb-email').value.trim();
+  if (!email) { alert('Please enter an email address'); return; }
+  const btn = document.getElementById('darkweb-btn');
+  btn.textContent = '⏳ SEARCHING DARK WEB...'; btn.disabled = true;
+  fetch('/api/darkweb', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email}) })
+    .then(r => r.json()).then(data => {
+      const v = document.getElementById('darkweb-verdict');
+      const breachEl = document.getElementById('darkweb-breaches');
+      breachEl.innerHTML = '';
+      if (data.found && data.count > 0) {
+        v.textContent = `⚠ ${data.count} DATA BREACH${data.count > 1 ? 'ES' : ''} FOUND`;
+        v.className = 'verdict-banner verdict-danger';
+        data.breaches.forEach(b => { breachEl.innerHTML += `<div class="breach-item"><span style="font-size:1.2rem">💥</span><div><div class="breach-name">${b}</div><div style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:#1e3a42">Data leaked — change your password</div></div></div>`; });
+        document.getElementById('darkweb-safe-msg').style.display = 'none';
+      } else {
+        v.textContent = '✅ NO BREACHES FOUND';
+        v.className = 'verdict-banner verdict-safe';
+        document.getElementById('darkweb-safe-msg').style.display = 'block';
+      }
+      document.getElementById('darkweb-result').classList.add('show');
+      btn.textContent = '✅ DONE'; btn.disabled = false;
+    }).catch(e => { alert('Error: ' + e); btn.textContent = '🌑 SCAN DARK WEB'; btn.disabled = false; });
+}
+
+function checkURL() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) { alert('Please enter a URL'); return; }
+  const btn = document.getElementById('url-btn');
+  btn.textContent = '⏳ CHECKING...'; btn.disabled = true;
+  fetch('/api/url_check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url}) })
+    .then(r => r.json()).then(data => {
+      const isBad = data.score > 60;
+      const isWarn = data.score > 30;
+      document.getElementById('url-score').textContent = data.score + '/100';
+      document.getElementById('url-score').className = 'rv ' + (isBad ? 'fake' : isWarn ? 'warn' : 'real');
+      document.getElementById('url-verdict2').textContent = data.verdict;
+      document.getElementById('url-verdict2').className = 'rv ' + (isBad ? 'fake' : isWarn ? 'warn' : 'real');
+      document.getElementById('url-msg').textContent = data.message || '';
+      const v = document.getElementById('url-verdict');
+      v.textContent = isBad ? '🔴 DANGEROUS URL' : isWarn ? '⚠ SUSPICIOUS URL' : '✅ SAFE URL';
+      v.className = 'verdict-banner ' + (isBad ? 'verdict-danger' : isWarn ? 'verdict-warn' : 'verdict-safe');
+      const fl = document.getElementById('url-flags'); fl.innerHTML = '';
+      if (data.flags) data.flags.forEach(f => { fl.innerHTML += `<div class="flag-item">⚠ ${f}</div>`; });
+      document.getElementById('url-result').classList.add('show');
+      btn.textContent = '✅ DONE'; btn.disabled = false;
+    }).catch(e => { alert('Error: ' + e); btn.textContent = '🔍 CHECK LINK SAFETY'; btn.disabled = false; });
+}
+</script>
+{% endblock %}

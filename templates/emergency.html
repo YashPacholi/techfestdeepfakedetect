@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}Emergency Help — DeepGuard AI{% endblock %}
+{% block content %}
+<style>
+.em-wrap{max-width:1000px;margin:0 auto;padding:30px 20px;}
+.em-banner{background:rgba(255,23,68,0.05);border:1px solid rgba(255,23,68,0.25);position:relative;overflow:hidden;margin-bottom:24px;}
+.em-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ff1744,#ff6d00,#ff1744);background-size:200%;animation:flow 2s linear infinite;}
+@keyframes flow{from{background-position:0}to{background-position:200%}}
+.em-title{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;color:#ff1744;text-align:center;padding:30px 20px 10px;letter-spacing:0.05em;text-shadow:0 0 20px rgba(255,23,68,0.4);}
+.em-sub{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#4a7a84;text-align:center;padding-bottom:20px;letter-spacing:0.1em;}
+.helpline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.helpline-card{background:#060e12;border:1px solid rgba(255,23,68,0.2);padding:24px;text-align:center;transition:all 0.3s;}
+.helpline-card:hover{border-color:rgba(255,23,68,0.4);transform:translateY(-2px);}
+.helpline-icon{font-size:2.5rem;margin-bottom:12px;display:block;}
+.helpline-name{font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;color:#ff1744;letter-spacing:0.08em;margin-bottom:8px;}
+.helpline-number{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:#ffd600;text-shadow:0 0 15px rgba(255,214,0,0.4);margin-bottom:8px;}
+.helpline-desc{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:#4a7a84;letter-spacing:0.06em;line-height:1.7;}
+.helpline-btn{display:block;margin-top:12px;padding:8px;background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.3);color:#ff1744;font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-decoration:none;transition:all 0.2s;}
+.helpline-btn:hover{background:rgba(255,23,68,0.15);color:#fff;}
+.steps-card{background:#060e12;border:1px solid #0d2830;margin-bottom:20px;}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #0d2830;background:rgba(255,23,68,0.03);}
+.card-title{font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;color:#ff1744;letter-spacing:0.08em;}
+.card-body{padding:20px;}
+.step-item{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;}
+.step-item:last-child{margin-bottom:0;}
+.step-num{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:#ff1744;min-width:36px;text-shadow:0 0 10px rgba(255,23,68,0.4);}
+.step-title{font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;color:#c8e6ea;letter-spacing:0.06em;margin-bottom:4px;}
+.step-desc{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a84;letter-spacing:0.04em;line-height:1.7;}
+.incident-form{background:#060e12;border:1px solid #0d2830;margin-bottom:20px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:span 2;}
+.form-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;color:#4a7a84;text-transform:uppercase;}
+.form-input{background:#020608;border:1px solid #0d2830;color:#c8e6ea;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:0.72rem;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:#ff1744;}
+.form-input::placeholder{color:#1e3a42;}
+textarea.form-input{resize:none;line-height:1.6;}
+.btn-submit{width:100%;padding:13px;background:rgba(255,23,68,0.08);border:1px solid #ff1744;color:#ff1744;font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;letter-spacing:0.2em;cursor:pointer;transition:all 0.3s;margin:0 20px 20px;width:calc(100% - 40px);}
+.btn-submit:hover{background:rgba(255,23,68,0.15);color:#fff;}
+.scam-types{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;}
+.scam-card{background:#060e12;border:1px solid #0d2830;padding:16px;display:flex;gap:12px;align-items:flex-start;}
+.scam-icon{font-size:1.5rem;flex-shrink:0;}
+.scam-title{font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;color:#ffd600;margin-bottom:4px;}
+.scam-desc{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:#4a7a84;line-height:1.6;}
+@media(max-width:768px){.helpline-grid{grid-template-columns:1fr;}.scam-types{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}.form-group.full{grid-column:span 1;}}
+</style>
+
+<div class="em-wrap">
+  <!-- BANNER -->
+  <div class="em-banner">
+    <div class="em-title">🆘 EMERGENCY CYBER HELP</div>
+    <div class="em-sub">// VICTIM OF FRAUD? GET IMMEDIATE HELP — INDIA CYBER SAFETY RESOURCES</div>
+  </div>
+
+  <!-- HELPLINES -->
+  <div class="helpline-grid">
+    <div class="helpline-card">
+      <span class="helpline-icon">📞</span>
+      <div class="helpline-name">NATIONAL CYBER HELPLINE</div>
+      <div class="helpline-number">1930</div>
+      <div class="helpline-desc">India's dedicated cyber crime helpline<br>Available 24 hours · 7 days<br>Report fraud immediately</div>
+      <a href="tel:1930" class="helpline-btn">📞 CALL 1930 NOW</a>
+    </div>
+    <div class="helpline-card">
+      <span class="helpline-icon">🏛️</span>
+      <div class="helpline-name">CERT-IN INDIA</div>
+      <div class="helpline-number" style="font-size:1rem">1800-11-4949</div>
+      <div class="helpline-desc">Computer Emergency Response Team<br>incident@cert-in.org.in<br>Technical cyber incidents</div>
+      <a href="mailto:incident@cert-in.org.in" class="helpline-btn">📧 EMAIL CERT-IN</a>
+    </div>
+    <div class="helpline-card">
+      <span class="helpline-icon">🌐</span>
+      <div class="helpline-name">ONLINE FIR PORTAL</div>
+      <div class="helpline-number" style="font-size:0.9rem">cybercrime.gov.in</div>
+      <div class="helpline-desc">File cyber crime complaint online<br>Track complaint status<br>All states supported</div>
+      <a href="https://cybercrime.gov.in" target="_blank" class="helpline-btn">🌐 FILE COMPLAINT ONLINE</a>
+    </div>
+  </div>
+
+  <!-- STEP BY STEP GUIDE -->
+  <div class="steps-card">
+    <div class="card-head"><span>📋</span><div class="card-title">IF YOU ARE A VICTIM — DO THIS IMMEDIATELY</div></div>
+    <div class="card-body">
+      <div class="step-item">
+        <div class="step-num">01</div>
+        <div><div class="step-title">STOP ALL TRANSACTIONS</div><div class="step-desc">Immediately stop any ongoing payment or transfer. Contact your bank to freeze the account if money was stolen. Call bank's 24/7 helpline.</div></div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">02</div>
+        <div><div class="step-title">CALL 1930 IMMEDIATELY</div><div class="step-desc">The faster you report, the higher the chance of recovering money. Cyber crime helpline can freeze the fraudster's account within hours of reporting.</div></div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">03</div>
+        <div><div class="step-title">TAKE SCREENSHOTS OF EVERYTHING</div><div class="step-desc">Screenshot all messages, transaction IDs, phone numbers, email addresses, and any other evidence. Do NOT delete any messages.</div></div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">04</div>
+        <div><div class="step-title">FILE COMPLAINT ON cybercrime.gov.in</div><div class="step-desc">Go to cybercrime.gov.in → Report Cyber Crime → Fill in details. You will get a complaint number to track your case.</div></div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">05</div>
+        <div><div class="step-title">CHANGE ALL PASSWORDS</div><div class="step-desc">Immediately change passwords for email, banking apps, UPI, and social media. Enable 2-factor authentication everywhere.</div></div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">06</div>
+        <div><div class="step-title">VISIT LOCAL CYBER POLICE STATION</div><div class="step-desc">Carry all evidence, transaction receipts, and screenshots. File a physical FIR at your nearest cyber crime police station.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMON SCAM TYPES -->
+  <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:#4a7a84;margin-bottom:12px">// COMMON CYBER SCAMS IN INDIA</div>
+  <div class="scam-types">
+    <div class="scam-card"><span class="scam-icon">🔲</span><div><div class="scam-title">UPI QR CODE FRAUD</div><div class="scam-desc">Fake QR codes that debit money instead of crediting. Never scan QR codes from unknown sources. Always verify merchant name.</div></div></div>
+    <div class="scam-card"><span class="scam-icon">📱</span><div><div class="scam-title">KYC UPDATE SCAM</div><div class="scam-desc">Fake calls claiming your SIM/bank/Paytm KYC needs update. Banks never ask for OTP or PIN over phone.</div></div></div>
+    <div class="scam-card"><span class="scam-icon">🎭</span><div><div class="scam-title">DEEPFAKE VIDEO SCAM</div><div class="scam-desc">AI-generated videos of family members asking for emergency money. Always call back on known number to verify.</div></div></div>
+    <div class="scam-card"><span class="scam-icon">💼</span><div><div class="scam-title">FAKE JOB OFFER</div><div class="scam-desc">Offers requiring registration fees or training fees. Legitimate companies never ask for money to hire you.</div></div></div>
+    <div class="scam-card"><span class="scam-icon">🏦</span><div><div class="scam-title">LOAN APP FRAUD</div><div class="scam-desc">Instant loan apps that steal contacts and photos then blackmail users. Only use RBI-registered lending apps.</div></div></div>
+    <div class="scam-card"><span class="scam-icon">🎰</span><div><div class="scam-title">LOTTERY / PRIZE FRAUD</div><div class="scam-desc">Messages claiming you won a prize — requires fees to claim. No legitimate lottery asks for money upfront.</div></div></div>
+  </div>
+
+  <!-- INCIDENT REPORT FORM -->
+  <div class="incident-form">
+    <div class="card-head"><span>📄</span><div class="card-title">FILL INCIDENT REPORT — DOWNLOAD AS PDF</div></div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Your Full Name</label><input type="text" class="form-input" id="f-name" placeholder="Enter your full name"></div>
+      <div class="form-group"><label class="form-label">Mobile Number</label><input type="tel" class="form-input" id="f-phone" placeholder="+91 XXXXXXXXXX"></div>
+      <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="f-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label class="form-label">Date of Incident</label><input type="date" class="form-input" id="f-date"></div>
+      <div class="form-group"><label class="form-label">Type of Fraud</label>
+        <select class="form-input" id="f-type">
+          <option value="">Select fraud type...</option>
+          <option>UPI / QR Code Fraud</option>
+          <option>Phishing / Fake Website</option>
+          <option>Deepfake / AI Voice Scam</option>
+          <option>KYC Update Scam</option>
+          <option>Fake Job Offer</option>
+          <option>Loan App Fraud</option>
+          <option>Social Media Hack</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Amount Lost (₹)</label><input type="number" class="form-input" id="f-amount" placeholder="0 if none"></div>
+      <div class="form-group full"><label class="form-label">Describe What Happened</label><textarea class="form-input" id="f-desc" rows="4" placeholder="Describe the incident in detail — what happened, how you were contacted, what was shared..."></textarea></div>
+      <div class="form-group full"><label class="form-label">Fraudster Contact Details (phone/email/UPI ID)</label><input type="text" class="form-input" id="f-contact" placeholder="Any phone numbers, emails, UPI IDs used by fraudster"></div>
+    </div>
+    <button class="btn-submit" onclick="generateReport()">📄 GENERATE & DOWNLOAD INCIDENT REPORT PDF</button>
+  </div>
+</div>
+
+<script>
+function generateReport() {
+  const name = document.getElementById('f-name').value || 'Not provided';
+  const phone = document.getElementById('f-phone').value || 'Not provided';
+  const email = document.getElementById('f-email').value || 'Not provided';
+  const date = document.getElementById('f-date').value || 'Not provided';
+  const type = document.getElementById('f-type').value || 'Not specified';
+  const amount = document.getElementById('f-amount').value || '0';
+  const desc = document.getElementById('f-desc').value || 'Not provided';
+  const contact = document.getElementById('f-contact').value || 'Not provided';
+
+  const content = `DEEPGUARD AI — CYBER INCIDENT REPORT
+=====================================
+Generated: ${new Date().toLocaleString()}
+Report ID: DG-${Date.now()}
+
+VICTIM DETAILS
+--------------
+Name: ${name}
+Mobile: ${phone}
+Email: ${email}
+
+INCIDENT DETAILS
+----------------
+Date of Incident: ${date}
+Type of Fraud: ${type}
+Amount Lost: Rs. ${amount}
+
+DESCRIPTION
+-----------
+${desc}
+
+FRAUDSTER DETAILS
+-----------------
+Contact Used: ${contact}
+
+RECOMMENDED ACTIONS
+-------------------
+1. Call 1930 (National Cyber Helpline) immediately
+2. File complaint at cybercrime.gov.in
+3. Contact your bank to freeze transactions
+4. Visit nearest cyber police station with this report
+5. Change all passwords and enable 2FA
+
+HELPLINES
+---------
+National Cyber Crime: 1930
+CERT-In: 1800-11-4949
+Online Portal: cybercrime.gov.in
+CERT-In Email: incident@cert-in.org.in
+
+---
+This report was generated by DeepGuard AI
+Digital Forensics & Threat Intelligence Platform`;
+
+  const blob = new Blob([content], {type: 'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `DeepGuard_Incident_Report_${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('✅ Incident report downloaded! Share this with cyber police when filing FIR.');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Cyber Awareness — DeepGuard AI{% endblock %}
+{% block content %}
+<style>
+.aw-wrap{max-width:1000px;margin:0 auto;padding:30px 20px;}
+.aw-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.aw-card{background:#060e12;border:1px solid #0d2830;padding:24px;transition:all 0.3s;}
+.aw-card:hover{border-color:#0f3340;transform:translateY(-2px);}
+.aw-icon{font-size:2rem;margin-bottom:12px;display:block;}
+.aw-title{font-family:'Orbitron',monospace;font-size:0.8rem;font-weight:700;color:#00e5ff;letter-spacing:0.08em;margin-bottom:10px;}
+.aw-text{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a84;line-height:1.8;letter-spacing:0.04em;}
+.aw-text li{margin-bottom:6px;list-style:none;padding-left:12px;}
+.aw-text li::before{content:'→ ';color:#00e5ff;}
+.tip-box{background:rgba(0,229,255,0.03);border:1px solid #0d2830;border-left:3px solid #00e5ff;padding:12px 16px;margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:#4a7a84;line-height:1.7;}
+.tip-box.red{border-color:#ff1744;background:rgba(255,23,68,0.03);}
+.tip-box.green{border-color:#00e676;background:rgba(0,230,118,0.03);}
+.quiz-card{background:#060e12;border:1px solid #0d2830;padding:20px;margin-bottom:16px;}
+.quiz-q{font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;color:#c8e6ea;margin-bottom:14px;letter-spacing:0.05em;}
+.quiz-opt{width:100%;padding:10px 14px;background:transparent;border:1px solid #0d2830;color:#4a7a84;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;text-align:left;margin-bottom:6px;display:block;}
+.quiz-opt:hover{border-color:#0f3340;color:#c8e6ea;background:rgba(0,229,255,0.03);}
+.quiz-opt.correct{border-color:#00e676;color:#00e676;background:rgba(0,230,118,0.08);}
+.quiz-opt.wrong{border-color:#ff1744;color:#ff1744;background:rgba(255,23,68,0.08);}
+.section-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:#4a7a84;margin-bottom:12px;margin-top:24px;}
+@media(max-width:768px){.aw-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="aw-wrap">
+  <div style="margin-bottom:24px">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:#4a7a84;margin-bottom:6px">// CYBER SAFETY EDUCATION MODULE</div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:#c8e6ea">Cyber <span style="color:#00e5ff">Awareness</span></div>
+  </div>
+
+  <div class="section-label">// WHAT ARE DEEPFAKES?</div>
+  <div class="aw-grid">
+    <div class="aw-card">
+      <span class="aw-icon">🎭</span>
+      <div class="aw-title">WHAT IS A DEEPFAKE?</div>
+      <div class="aw-text">A deepfake is AI-generated media where a person's face or voice is replaced with someone else's using deep learning. The word comes from "deep learning" + "fake".<br><br>They are created using GANs (Generative Adversarial Networks) — two AI systems that compete to create increasingly realistic fakes.</div>
+    </div>
+    <div class="aw-card">
+      <span class="aw-icon">🔍</span>
+      <div class="aw-title">HOW TO SPOT A DEEPFAKE</div>
+      <div class="aw-text"><ul>
+        <li>Blurring around hairline and ears</li>
+        <li>Unnatural blinking — too fast or too slow</li>
+        <li>Lip-sync lag — audio slightly off</li>
+        <li>Skin looks "plastic" — no pores</li>
+        <li>Inconsistent lighting on face</li>
+        <li>Jewelry or glasses look distorted</li>
+        <li>Background flickers near face edges</li>
+      </ul></div>
+    </div>
+    <div class="aw-card">
+      <span class="aw-icon">🔊</span>
+      <div class="aw-title">VOICE DEEPFAKES (AI CLONING)</div>
+      <div class="aw-text">AI can clone anyone's voice from just 3-10 seconds of audio. Used in scams where "family members" call asking for emergency money.<br><br><strong style="color:#ff1744">Red flags:</strong> Calls from unknown numbers, urgency, asks for money transfer, slightly robotic tone, no background noise.</div>
+    </div>
+    <div class="aw-card">
+      <span class="aw-icon">🛡️</span>
+      <div class="aw-title">HOW TO PROTECT YOURSELF</div>
+      <div class="aw-text"><ul>
+        <li>Set a secret family code word for emergencies</li>
+        <li>Always call back on known number to verify</li>
+        <li>Ask video callers to cover one eye or turn sideways</li>
+        <li>Never transfer money based on video/voice alone</li>
+        <li>Use DeepGuard AI to verify suspicious media</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="section-label">// CYBER SAFETY TIPS</div>
+  <div class="tip-box green">✅ <strong>Passwords:</strong> Use 12+ characters with uppercase, numbers, symbols. Use different passwords for every account. Enable 2FA everywhere.</div>
+  <div class="tip-box green">✅ <strong>UPI Safety:</strong> Never enter your UPI PIN to "receive" money. Always verify merchant name after scanning QR. Banks never ask for PIN.</div>
+  <div class="tip-box green">✅ <strong>Email Safety:</strong> Hover over links before clicking. Check sender domain carefully. Legitimate banks never ask for OTP via email.</div>
+  <div class="tip-box red">🔴 <strong>Never Share:</strong> OTP, PIN, CVV, password, Aadhaar number with anyone — even if they claim to be from your bank or government.</div>
+  <div class="tip-box red">🔴 <strong>Public WiFi:</strong> Never do banking or UPI transactions on public WiFi. Use mobile data or a VPN instead.</div>
+  <div class="tip-box red">🔴 <strong>Unknown Apps:</strong> Never install apps from links sent via WhatsApp or SMS. Only use Google Play Store or Apple App Store.</div>
+
+  <div class="section-label">// TEST YOUR KNOWLEDGE — CYBER SAFETY QUIZ</div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q1. Someone calls claiming to be your bank and asks for your OTP to "protect your account". What should you do?</div>
+    <button class="quiz-opt" onclick="answer(this, false)">A. Share the OTP — they need it to protect you</button>
+    <button class="quiz-opt" onclick="answer(this, true)">B. Hang up immediately — banks NEVER ask for OTP</button>
+    <button class="quiz-opt" onclick="answer(this, false)">C. Share only the last 4 digits</button>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q2. You receive a WhatsApp video call from your "cousin" asking for ₹10,000 emergency money. The video looks slightly blurry around the face. What do you do?</div>
+    <button class="quiz-opt" onclick="answer(this, false)">A. Send the money immediately — it's an emergency</button>
+    <button class="quiz-opt" onclick="answer(this, false)">B. Ask them to send their bank details and transfer</button>
+    <button class="quiz-opt" onclick="answer(this, true)">C. End the call and call your cousin on their known number to verify</button>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q3. A QR code at a restaurant asks you to scan and pay. After scanning, it asks you to "Enter PIN to receive cashback". What is this?</div>
+    <button class="quiz-opt" onclick="answer(this, true)">A. A UPI fraud — you never enter PIN to receive money</button>
+    <button class="quiz-opt" onclick="answer(this, false)">B. Normal cashback process — enter the PIN</button>
+    <button class="quiz-opt" onclick="answer(this, false)">C. A technical glitch — try again</button>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q4. You get an email: "Your SBI account will be suspended! Click here to verify: http://sbi-secure-verify.xyz" — What should you do?</div>
+    <button class="quiz-opt" onclick="answer(this, false)">A. Click the link and verify your account</button>
+    <button class="quiz-opt" onclick="answer(this, true)">B. Delete the email — this is a phishing attack</button>
+    <button class="quiz-opt" onclick="answer(this, false)">C. Forward it to your family to warn them</button>
+  </div>
+
+  <div style="background:#060e12;border:1px solid #0d2830;padding:20px;text-align:center;margin-top:16px">
+    <div style="font-family:'Orbitron',monospace;font-size:0.8rem;color:#00e5ff;margin-bottom:8px">🆘 REMEMBER — IF YOU ARE A VICTIM</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#4a7a84;margin-bottom:12px">Call immediately · Do not panic · Evidence is key</div>
+    <a href="/emergency" style="display:inline-block;padding:10px 24px;background:rgba(255,23,68,0.08);border:1px solid #ff1744;color:#ff1744;font-family:'Orbitron',monospace;font-size:0.7rem;letter-spacing:0.1em;text-decoration:none">🆘 GO TO EMERGENCY HELP →</a>
+  </div>
+</div>
+
+<script>
+function answer(btn, correct) {
+  const card = btn.parentElement;
+  card.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+  if (correct) {
+    btn.classList.add('correct');
+    btn.textContent = '✅ ' + btn.textContent + ' — CORRECT!';
+  } else {
+    btn.classList.add('wrong');
+    btn.textContent = '❌ ' + btn.textContent + ' — WRONG!';
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      if (b !== btn) b.style.opacity = '0.4';
+    });
+  }
+}
+</script>
+{% endblock %}
