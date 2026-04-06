@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: deepguard-ai
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
